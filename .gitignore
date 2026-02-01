@@ -1,0 +1,26 @@
+# Ignore non-Markdown files
+*.json
+*.exp
+*.py
+*.sh
+.DS_Store
+
+# Ignore IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore node modules if any
+node_modules/
+
+# Ignore system files
+Thumbs.db
+ehthumbs.db
+
+# Ignore log files
+*.log
+
+# Ignore temporary files
+tmp/
+temp/
