@@ -429,8 +429,9 @@ tailscale ip -4
 
 在云服务器上执行：
 
+#### 方法一：Ubuntu/Debian 系统
+
 ```bash
-# Ubuntu/Debian 系统
 curl -fsSL https://tailscale.com/install.sh | sh
 
 # 登录
@@ -439,6 +440,74 @@ tailscale up
 # 查看连接状态
 tailscale status
 ```
+
+---
+
+#### 方法二：CentOS/RHEL/Rocky Linux/AlmaLinux 系统
+
+```bash
+sudo yum install yum-utils
+sudo yum-config-manager --add-repo https://pkgs.tailscale.com/stable/centos/7/tailscale.repo
+sudo yum install tailscale
+sudo systemctl enable --now tailscaled
+tailscale up
+```
+
+---
+
+#### 方法三：OpenCloudOS 系统（推荐）
+
+OpenCloudOS 基于 CentOS，但官方安装脚本无法识别，需要手动安装：
+
+```bash
+# 1. 安装必要工具
+sudo dnf install -y curl
+
+# 2. 下载 Tailscale RPM 包
+cd /tmp
+wget https://pkgs.tailscale.com/stable/centos/9/tailscale-1.78.1-1.el9.x86_64.rpm
+
+# 3. 安装 Tailscale
+sudo dnf install -y tailscale-*.rpm
+
+# 4. 启动 Tailscale 服务
+sudo systemctl enable --now tailscaled
+
+# 5. 登录 Tailscale
+tailscale up
+
+# 6. 查看连接状态
+tailscale status
+```
+
+---
+
+#### 方法四：使用静态二进制文件（通用方法）
+
+如果上述方法都不行，可以使用静态二进制文件：
+
+```bash
+# 1. 下载静态二进制文件
+cd /tmp
+wget https://pkgs.tailscale.com/stable/tailscale_1.78.1_amd64.tgz
+
+# 2. 解压
+tar xzf tailscale_*.tgz
+
+# 3. 安装
+sudo tailscale_*/tailscale install
+
+# 4. 启动 Tailscale 服务
+sudo systemctl enable --now tailscaled
+
+# 5. 登录 Tailscale
+tailscale up
+
+# 6. 查看连接状态
+tailscale status
+```
+
+---
 
 **预期结果**：
 ```
@@ -811,7 +880,69 @@ openclaw-node config set logging.level "info"
 
 ## 故障排除
 
-### 问题 1：节点无法启动
+### 问题 1：Tailscale 安装失败 - OpenCloudOS 系统
+
+**症状**：执行 `curl -fsSL https://tailscale.com/install.sh | sh` 提示无法识别系统
+
+**错误信息**：
+```
+Couldn't determine what kind of Linux is running.
+OS=other-linux
+```
+
+**原因**：OpenCloudOS 是较新的系统，官方安装脚本无法识别。
+
+**解决方案**：使用方法三（OpenCloudOS 专用）或方法四（通用方法）
+
+```bash
+# 方法三：OpenCloudOS 专用安装
+cd /tmp
+wget https://pkgs.tailscale.com/stable/centos/9/tailscale-1.78.1-1.el9.x86_64.rpm
+sudo dnf install -y tailscale-*.rpm
+sudo systemctl enable --now tailscaled
+tailscale up
+
+# 或使用方法四：静态二进制文件
+cd /tmp
+wget https://pkgs.tailscale.com/stable/tailscale_1.78.1_amd64.tgz
+tar xzf tailscale_*.tgz
+sudo tailscale_*/tailscale install
+sudo systemctl enable --now tailscaled
+tailscale up
+```
+
+---
+
+### 问题 2：Tailscale 安装失败 - GPG 签名验证错误
+
+**症状**：执行 `yum install tailscale` 提示 GPG 签名验证错误
+
+**错误信息**：
+```
+Error: Failed to download metadata for repo 'tailscale-stable': repomd.xml GPG signature verification error: Bad GPG signature
+```
+
+**原因**：GPG 密钥验证失败
+
+**解决方案**：跳过 GPG 验证
+
+```bash
+# 方法一：使用 dnf 安装（推荐）
+sudo dnf install -y tailscale --nogpgcheck
+
+# 方法二：使用 rpm 安装
+cd /tmp
+wget https://pkgs.tailscale.com/stable/centos/9/tailscale-1.78.1-1.el9.x86_64.rpm
+sudo rpm -ivh --nogpgcheck tailscale-*.rpm
+
+# 启动服务
+sudo systemctl enable --now tailscaled
+tailscale up
+```
+
+---
+
+### 问题 3：节点无法启动
 
 **症状**：执行 `openclaw-node start` 后没有响应
 
@@ -831,7 +962,7 @@ openclaw-node start
 
 ---
 
-### 问题 2：无法配对节点
+### 问题 4：无法配对节点
 
 **症状**：在云端执行 `openclaw nodes approve` 失败
 
@@ -853,7 +984,7 @@ openclaw-node restart
 
 ---
 
-### 问题 3：命令执行失败
+### 问题 5：命令执行失败
 
 **症状**：在云端执行命令时返回错误
 
