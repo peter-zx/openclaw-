@@ -1,0 +1,25 @@
+#!/usr/bin/expect
+
+set timeout 60
+spawn git push -u origin main
+
+expect {
+    "Username for 'https://github.com':" {
+        send "peter-zx\r"
+        exp_continue
+    }
+    "Password for 'https://peter-zx@github.com':" {
+        send "\r"
+        exp_continue
+    }
+    "Personal access token for 'https://peter-zx@github.com':" {
+        send "\r"
+        exp_continue
+    }
+    timeout {
+        puts "Timeout or no authentication required"
+    }
+    eof {
+        puts "Push completed"
+    }
+}
